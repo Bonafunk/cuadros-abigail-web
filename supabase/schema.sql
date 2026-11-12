@@ -15,10 +15,16 @@ create table if not exists public.catalog_products (
   updated_at timestamptz not null default now(),
   created_at timestamptz not null default now()
 );
+create index if not exists catalog_products_active_idx on public.catalog_products (is_active, is_hidden, updated_at desc);
 
-create index if not exists catalog_products_active_idx
-  on public.catalog_products (is_active, is_hidden, updated_at desc);
-
+create table if not exists public.integration_tokens (
+  provider text primary key,
+  seller_id bigint not null,
+  access_token_enc text not null,
+  refresh_token_enc text not null,
+  expires_at timestamptz not null,
+  updated_at timestamptz not null default now()
+);
 alter table public.catalog_products enable row level security;
--- Public website reads are performed server-side with the service role key.
--- Never expose SUPABASE_SERVICE_ROLE_KEY in browser code.
+alter table public.integration_tokens enable row level security;
+-- El sitio consulta desde el servidor. Nunca exponer SUPABASE_SERVICE_ROLE_KEY al navegador.
